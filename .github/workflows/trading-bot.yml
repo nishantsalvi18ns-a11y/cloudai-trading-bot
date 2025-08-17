@@ -1,0 +1,40 @@
+name: Automated Trading Bot
+
+on:
+  schedule:
+    # Run every 5 minutes during market hours (9:15 AM to 3:30 PM IST)
+    - cron: '*/5 3-10 * * 1-5'  # Mon-Fri, 9:15 AM to 3:30 PM IST
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  trading-analysis:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ta-lib-dev
+
+    - name: Install Python dependencies
+      run: |
+        pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Run trading analysis
+      env:
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        EMAIL_USER: ${{ secrets.EMAIL_USER }}
+        EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+        NEWSAPI_KEY: ${{ secrets.NEWSAPI_KEY }}
+      run: |
+        python automated_trading_bot.py
